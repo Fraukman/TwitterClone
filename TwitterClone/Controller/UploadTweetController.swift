@@ -74,7 +74,7 @@ class UploadTweetController: UIViewController {
                 return
             }
             
-            print("DEBUG: Tweet did upload to database..")
+            self.dismiss(animated: true, completion: nil)
         }
     }
     //MARK: - API
