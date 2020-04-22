@@ -8,9 +8,19 @@
 
 import UIKit
 
+protocol ProfileHeaderDelegate: class {
+    func handleDismissal()
+}
+
 class ProfileHeader: UICollectionReusableView {
     
     //MARK: - Properties
+    
+    weak var delegate: ProfileHeaderDelegate?
+    
+    var user: User? {
+        didSet{configure()}
+    }
     
     private let filterBar = ProfileFilterView()
     
@@ -56,7 +66,6 @@ class ProfileHeader: UICollectionReusableView {
     private let fullnameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 20)
-        label.text = "Bruce Wayne"
         return label
     }()
     
@@ -64,7 +73,6 @@ class ProfileHeader: UICollectionReusableView {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 16)
         label.textColor = .lightGray
-        label.text = "@batima"
         return label
     }()
     
@@ -80,6 +88,25 @@ class ProfileHeader: UICollectionReusableView {
        let view = UIView()
         view.backgroundColor = .mainBlue
         return view
+    }()
+    
+    private let followingLabel: UILabel = {
+        let label = UILabel()
+        label.text = "2 Following"
+        let followTap = UITapGestureRecognizer(target: self, action: #selector(handleFollowingTapped))
+        label.isUserInteractionEnabled = true
+        label.addGestureRecognizer(followTap)
+        
+        return label
+    }()
+    
+    private let followersLabel: UILabel = {
+        let label = UILabel()
+        label.text = "0 Followers"
+        let followTap = UITapGestureRecognizer(target: self, action: #selector(handleFollowersTapped))
+        label.isUserInteractionEnabled = true
+        label.addGestureRecognizer(followTap)
+        return label
     }()
     
     //MARK: - Lifecycle
@@ -109,6 +136,14 @@ class ProfileHeader: UICollectionReusableView {
         addSubview(userDetailsStack)
         userDetailsStack.anchor(top: profileImageView.bottomAnchor, left: leftAnchor, right: rightAnchor, paddingTop: 8, paddingLeft: 12, paddingRight: 12)
         
+        let followStack = UIStackView(arrangedSubviews: [followingLabel,followersLabel])
+        followStack.axis = .horizontal
+        followStack.distribution = .fillEqually
+        followStack.spacing = 8
+        
+        addSubview(followStack)
+        followStack.anchor(top: userDetailsStack.bottomAnchor, left: leftAnchor, paddingTop: 8, paddingLeft: 12)
+        
         addSubview(filterBar)
         filterBar.anchor( left: leftAnchor, bottom: bottomAnchor, right: rightAnchor, height: 50)
         
@@ -125,14 +160,39 @@ class ProfileHeader: UICollectionReusableView {
     //MARK: - Selectors
     
     @objc func handleDismiss(){
-        print("DEBUG: Handle dissmis...")
+        delegate?.handleDismissal()
     }
     
     @objc func handleEditProfileFollow(){
         print("DEBUG: Handle edit profile/follow")
     }
     
+    @objc func handleFollowingTapped(){
+        print("DEBUG: Handle following tapped")
+    }
+    
+    @objc func handleFollowersTapped(){
+        print("DEBUG: Handle followers tapped")
+    }
+    
     //MARK: - HelperFunctions
+    
+    func configure(){
+        guard let user = user else {return}
+        
+        let viewModel = ProfileHeaderViewModel(user: user)
+        
+        profileImageView.sd_setImage(with: user.profileImageUrl)
+        
+        fullnameLabel.text = user.fullname
+        usernameLabel.text = "@\(user.username)"
+        
+        editProfileFollowButton.setTitle(viewModel.actionButtonTitle, for: .normal)
+        followingLabel.attributedText = viewModel.followingString
+        followersLabel.attributedText = viewModel.followersString
+
+    }
+    
 }
 
     //MARK: - profileFilterViewDelegate
