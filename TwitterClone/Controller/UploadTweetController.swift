@@ -58,7 +58,7 @@ class UploadTweetController: UIViewController {
         
         configureUI()
         
-        print("DEBUG: User is: \(user.username)")
+        
     }
     
     //MARK: - Selectors
