@@ -10,6 +10,7 @@ import UIKit
 
 protocol ProfileHeaderDelegate: class {
     func handleDismissal()
+    func handleEditProfileFollow(_ header: ProfileHeader)
 }
 
 class ProfileHeader: UICollectionReusableView {
@@ -51,7 +52,7 @@ class ProfileHeader: UICollectionReusableView {
         return iv
     }()
     
-    private lazy var editProfileFollowButton: UIButton = {
+     lazy var editProfileFollowButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Loading", for: .normal)
         button.layer.borderColor = UIColor.mainBlue.cgColor
@@ -85,7 +86,7 @@ class ProfileHeader: UICollectionReusableView {
     }()
     
     private let underlineView: UIView = {
-       let view = UIView()
+        let view = UIView()
         view.backgroundColor = .mainBlue
         return view
     }()
@@ -164,11 +165,12 @@ class ProfileHeader: UICollectionReusableView {
     }
     
     @objc func handleEditProfileFollow(){
-        print("DEBUG: Handle edit profile/follow")
+        delegate?.handleEditProfileFollow(self)
+        
     }
     
     @objc func handleFollowingTapped(){
-        print("DEBUG: Handle following tapped")
+        
     }
     
     @objc func handleFollowersTapped(){
@@ -190,12 +192,12 @@ class ProfileHeader: UICollectionReusableView {
         editProfileFollowButton.setTitle(viewModel.actionButtonTitle, for: .normal)
         followingLabel.attributedText = viewModel.followingString
         followersLabel.attributedText = viewModel.followersString
-
+        
     }
     
 }
 
-    //MARK: - profileFilterViewDelegate
+//MARK: - profileFilterViewDelegate
 
 extension ProfileHeader: profileFilterViewDelegate{
     func filterView(_ view: ProfileFilterView, didSelect indexPath: IndexPath) {
@@ -208,5 +210,5 @@ extension ProfileHeader: profileFilterViewDelegate{
         }
         
     }
- 
+    
 }

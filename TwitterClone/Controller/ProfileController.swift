@@ -15,7 +15,7 @@ class ProfileController: UICollectionViewController {
     
     //MARK: - Properties
     
-    private let user: User
+    private var user: User
     
     private var tweets = [Tweet](){
         didSet{
@@ -39,13 +39,15 @@ class ProfileController: UICollectionViewController {
         
         configureCollectionView()
         fetchTweets()
+        checkIfUserIsFollowed()
+        fetchUserStats()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.barStyle = .black
         navigationController?.navigationBar.isHidden = true
-
+        
     }
     
     //MARK: - API
@@ -54,6 +56,20 @@ class ProfileController: UICollectionViewController {
         
         TweetService.shared.fetchTweets(forUser: user) { (tweets) in
             self.tweets = tweets
+        }
+    }
+    
+    func checkIfUserIsFollowed(){
+        UserService.shared.checkIfUserIsFollowed(uid: user.uid) { (isFollowed) in
+            self.user.isFollowed = isFollowed
+            self.collectionView.reloadData()
+        }
+    }
+    
+    func fetchUserStats(){
+        UserService.shared.fetchUserStats(uid: user.uid) {stats in
+            self.user.stats = stats
+            self.collectionView.reloadData()
         }
     }
     
@@ -69,7 +85,7 @@ class ProfileController: UICollectionViewController {
     
 }
 
-    //MARK: - UICollectionViewDelegate
+//MARK: - UICollectionViewDelegate
 
 extension ProfileController{
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
@@ -86,7 +102,7 @@ extension ProfileController{
     
 }
 
-    //MARK: - UICollectionviewDelegate
+//MARK: - UICollectionviewDelegate
 
 extension ProfileController{
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
@@ -98,7 +114,7 @@ extension ProfileController{
 }
 
 
-    //MARK: - UICollectionViewDelegateFlowLayout
+//MARK: - UICollectionViewDelegateFlowLayout
 
 extension ProfileController: UICollectionViewDelegateFlowLayout{
     
@@ -111,9 +127,32 @@ extension ProfileController: UICollectionViewDelegateFlowLayout{
     }
 }
 
-    //MARK: - ProfileHeaderDelegate
+//MARK: - ProfileHeaderDelegate
 
 extension ProfileController: ProfileHeaderDelegate{
+    func handleEditProfileFollow(_ header: ProfileHeader) {
+        
+        if user.isCurrentUser{
+            return
+        }
+        
+        if user.isFollowed {
+            UserService.shared.unfollowUser(uid: user.uid) { (error, ref) in
+                self.user.isFollowed = false
+                self.collectionView.reloadData()
+                
+            }
+        }else {
+            UserService.shared.followUser(uid: user.uid) { (error, ref) in
+                self.user.isFollowed = true
+                header.editProfileFollowButton.setTitle("Following", for: .normal)
+                self.collectionView.reloadData()
+                
+            }
+        }
+        
+    }
+    
     func handleDismissal() {
         navigationController?.popViewController(animated: true)
     }
