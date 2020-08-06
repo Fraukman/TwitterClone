@@ -12,6 +12,12 @@ class TweetHeader: UICollectionReusableView{
     
     //MARK: - Properties
     
+    var tweet: Tweet? {
+        didSet {
+            configure()
+        }
+    }
+    
     private lazy var profileImageView: UIImageView = {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFit
@@ -66,19 +72,9 @@ class TweetHeader: UICollectionReusableView{
         return button
     }()
     
-    private lazy var retweetsLabel: UILabel = {
-        let label = UILabel()
-        label.text = "2 retweets"
-        label.font = UIFont.systemFont(ofSize: 14)
-        return label
-    }()
+    private lazy var retweetsLabel = UILabel()
     
-    private lazy var likesLabel: UILabel = {
-        let label = UILabel()
-        label.font = UIFont.systemFont(ofSize: 14)
-        label.text = "0 likes"
-        return label
-    }()
+    private lazy var likesLabel = UILabel()
     
     private lazy var statsView: UIView = {
        let view = UIView()
@@ -104,6 +100,30 @@ class TweetHeader: UICollectionReusableView{
         divider2.anchor(left: view.leftAnchor, bottom: view.bottomAnchor, right: view.rightAnchor, paddingLeft: 8, height: 1.0)
         
         return view
+    }()
+    
+    private lazy var commentButton: UIButton = {
+        let button = createButton(withImageName: "comment")
+        button.addTarget(self, action: #selector(handleCommentTapped), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var retweetButton: UIButton = {
+        let button = createButton(withImageName: "retweet")
+        button.addTarget(self, action: #selector(handleRetweetTapped), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var likeButton: UIButton = {
+        let button = createButton(withImageName: "like")
+        button.addTarget(self, action: #selector(handleLikeTapped), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var shareButton: UIButton = {
+        let button = createButton(withImageName: "share")
+        button.addTarget(self, action: #selector(handleShareTapped), for: .touchUpInside)
+        return button
     }()
     //MARK: - Lifecycle
     
@@ -132,6 +152,16 @@ class TweetHeader: UICollectionReusableView{
         
         addSubview(statsView)
         statsView.anchor(top: dateLabel.bottomAnchor, left: leftAnchor, right: rightAnchor, paddingTop: 20, height: 40)
+    
+        let actionStack = UIStackView(arrangedSubviews: [commentButton,retweetButton,likeButton,shareButton])
+        actionStack.distribution = .fillEqually
+        
+        actionStack.spacing = 72
+        
+        addSubview(actionStack)
+        actionStack.centerX(inView: self)
+        actionStack.anchor(bottom: bottomAnchor,paddingBottom: 12)
+        
     }
     
     required init?(coder: NSCoder) {
@@ -146,6 +176,43 @@ class TweetHeader: UICollectionReusableView{
     
     @objc func showActionSheet(){
         print("DEBUG: Handle show action sheet...")
+    }
+    
+    @objc func handleCommentTapped(){
+        print("DEBUG: Handle comment button tapped")
+    }
+ 
+    @objc func handleRetweetTapped(){
+        print("DEBUG: Handle retweet button tapped")
+    }
+    
+    @objc func handleLikeTapped(){
+        print("DEBUG: Handle like button tapped")
+    }
+    
+    @objc func handleShareTapped(){
+        print("DEBUG: Handle share button tapped")
+    }
+    //MARK: - Helper functions
+    
+    func createButton(withImageName imageName: String)->UIButton{
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(named: imageName), for: .normal)
+        button.tintColor = .darkGray
+        button.setDimensions(width: 20, height: 20)
+        return button
+    }
+    
+    func configure(){
+        guard let tweet = tweet else {return}
+        
+        let viewModel = TweetViewModel(tweet: tweet)
+        fullnameLabel.text = tweet.user.fullname
+        usernameLabel.text = viewModel.usernameText
+        profileImageView.sd_setImage(with: viewModel.profileImageUrl)
+        dateLabel.text = viewModel.headerTimeStamp
+        retweetsLabel.attributedText = viewModel.retweetsAttributedString
+        likesLabel.attributedText = viewModel.likesAttributedString
     }
     
 }
